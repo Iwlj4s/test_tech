@@ -37,6 +37,13 @@ class User(Base):
         lazy="selectin" # Load related items with user
     )
 
+    # One-to-many relationship with Post model
+    posts: Mapped[List["Post"]] = relationship(
+        "Post",
+        back_populates="user",
+        lazy="selectin"
+    )
+
 class Item(Base):
     """
     Item model.
@@ -60,4 +67,25 @@ class Item(Base):
         "User",
         back_populates="item",  # Back reference
         lazy="selectin" # Load user with item
+    )
+
+
+class Post(Base):
+    """
+    Post model for user-generated posts (e.g., tweets)
+    """
+    __tablename__ = 'posts'
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    content: Mapped[str] = mapped_column(String,
+                                         nullable=False,
+                                         server_default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),
+                                                 nullable=False,
+                                                 server_default=func.now())
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+
+    user: Mapped["User"] = relationship(
+        "User",
+        back_populates="posts",
+        lazy="selectin"
     )

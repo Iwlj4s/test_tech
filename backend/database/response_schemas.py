@@ -186,6 +186,28 @@ class ItemWithUserResponse(ItemResponse):
     user_email: str
     
 
+# Post schemas
+class PostResponse(BaseModel):
+    """
+    Basic post schema without relationships.
+    """
+    id: int
+    content: str
+    created_at: datetime
+    user_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class PostWithUserResponse(PostResponse):
+    """
+    Extended post schema including owner information.
+    """
+    user_name: str
+    user_email: str
+    
+
 # Response type aliases for better readability in route annotations
 # Users
 UserListResponse = ListResponse[UserResponse]  
@@ -218,3 +240,20 @@ ItemDetailResponse = DataResponse[ItemWithUserResponse]
 
 ItemListResponse = ListResponse[ItemWithUserResponse]
 """Response type for item list retrieval with user info"""
+
+
+# Posts
+PostCreateResponse = DataResponse[PostResponse]
+"""Response type for post creation endpoints"""
+
+PostUpdateResponse = DataResponse[PostResponse]
+"""Response type for post update endpoints"""
+
+PostDeleteResponse = BaseResponse
+"""Response type for post deletion endpoints"""
+
+PostDetailResponse = DataResponse[PostWithUserResponse]
+"""Response type for single post retrieval with user info"""
+
+PostListResponse = ListResponse[PostWithUserResponse]
+"""Response type for post list retrieval with user info"""

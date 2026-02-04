@@ -41,6 +41,12 @@ class ValidationService:
             "required_fields": ["name", "user_id"],
             "unique_per_user_fields": ["name"]
         }
+        ,
+        "Post": {
+            "unique_fields": [],
+            "required_fields": ["user_id", "content"],
+            "unique_per_user_fields": []
+        }
     }
 
     """

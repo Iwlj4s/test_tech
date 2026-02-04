@@ -47,3 +47,14 @@ class AdminUserCreate(User):
 class AdminUserUpdate(UserUpdate):
     """Schema for admin updating user (only for admins)"""
     is_admin: Optional[bool] = Field(default=None, title="Is user admin?")
+
+
+# Post schemas
+class PostCreate(BaseModel):
+    """Schema for post creation"""
+    content: Optional[str] = Field(default=None, min_length=1, title="Post content")
+
+
+class PostUpdate(BaseModel):
+    """Schema for post update"""
+    content: Optional[str] = None
