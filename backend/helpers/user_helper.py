@@ -55,6 +55,7 @@ async def take_access_token_for_user(db: AsyncSession,
         name=user.name,
         email=user.email,
         bio=user.bio,
+        created_at=user.created_at,
         is_admin=user.is_admin,
         user_access_token=access_token
     )

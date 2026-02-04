@@ -72,6 +72,7 @@ async def create_item(request: schema.Item,
             id=new_item.id,
             name=new_item.name,
             description=new_item.description,
+            created_at=new_item.created_at,
             user_id=new_item.user_id
         )
     )
@@ -132,6 +133,7 @@ async def update_item(item_id: int,
             id=updated_item.id,
             name=updated_item.name,
             description=updated_item.description,
+            created_at=item.created_at,
             user_id=updated_item.user_id
         )
     )
@@ -205,6 +207,7 @@ async def show_item(item_id: int,
             id=item.id,
             name=item.name,
             description=item.description,
+            created_at=item.created_at,
             user_id=item.user.id,
             user_name=item.user.name,
             user_email=item.user.email

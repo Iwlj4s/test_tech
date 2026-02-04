@@ -12,6 +12,7 @@ class Item(BaseModel):
     """Schema for item creation and validation"""
     name: Union[str, None] = Field(default=None, min_length=3, title="Item name")
     description: Optional[str] = Field(default=None, min_length=3, title="Item description")
+    created_at: Union[str] = Field(default=None, title="Item creation timestamp")
 
 class ItemUpdate(BaseModel):
     """Schema for update item """
@@ -24,6 +25,7 @@ class User(BaseModel):
     email: Union[str, None] = Field(default=None, title="User's email")
     password: Union[str, None] = Field(default=None, min_length=4, title="User's password")
     bio: Optional[str] = Field(default=None, min_length=10, title="User's biography")
+    created_at: Union[str] = Field(default=None, title="User creation timestamp")
 
 class UserSignIn(BaseModel):
     """Schema for user login authentication"""

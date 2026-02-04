@@ -84,12 +84,14 @@ class UserDAO:
             name=user.name,
             email=user.email,
             bio=user.bio,
+            created_at=user.created_at,
             is_admin=user.is_admin,
             items=[
                 response_schemas.ItemResponse(
                     id=item.id,
                     name=item.name,
                     description=item.description,
+                    created_at=item.created_at,
                     user_id=item.user_id
                 )
                 for item in user.item

@@ -17,5 +17,5 @@ async def require_admin(current_user: models.User = Depends(get_current_user)) -
     """
     Dependency that requires admin role.
     """
-    check_is_admin(current_user)
+    await check_is_admin(current_user)
     return current_user

@@ -72,6 +72,7 @@ async def update_admin_status(user_id: int,
             name=user_to_promote.name,
             email=user_to_promote.email,
             bio=user_to_promote.bio,
+            created_at=user_to_promote.created_at,
             is_admin=user_to_promote.is_admin
         )
     )

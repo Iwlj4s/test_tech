@@ -96,7 +96,7 @@ async def get_user(user_id: int,
     )
 
 @user_router.get("/me/", status_code=200)
-async def get_me(user_data: schema.User = Depends(get_current_user)) -> schema.User:
+async def get_me(user_data: schema.User = Depends(get_current_user)) -> response_schemas.UserResponse:
     """
     Get current authenticated user's profile.
     Requires valid JWT token.

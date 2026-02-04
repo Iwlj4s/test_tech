@@ -78,6 +78,7 @@ async def sign_up(request: schema.User,
             name=new_user.name,
             email=new_user.email,
             bio=new_user.bio,
+            created_at=new_user.created_at,
             is_admin=new_user.is_admin
         )
     )
@@ -113,7 +114,7 @@ async def login(request: schema.UserSignIn,
     )
 
 async def get_current_user(db: AsyncSession = Depends(get_db),
-                           token: str = Depends(get_token)) -> models.User:
+                           token: str = Depends(get_token)) -> response_schemas.UserResponse:
     """
     Get current authenticated user from JWT token.
     Used as dependency in protected routes.
@@ -187,6 +188,7 @@ async def update_me(user_id: int,
             name=updated_user.name,
             email=updated_user.email,
             bio=updated_user.bio,
+            created_at=updated_user.created_at,
             is_admin=updated_user.is_admin
         )
     )
@@ -240,6 +242,7 @@ async def get_current_user_item(item_id: int,
             id=item.id,
             name=item.name,
             description=item.description,
+            created_at=item.created_at,
             user_id=item.user.id,
             user_name=item.user.name,
             user_email=item.user.email

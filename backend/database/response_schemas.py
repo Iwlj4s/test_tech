@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel
 from typing import List, Optional, Generic, TypeVar
 
@@ -107,6 +108,7 @@ class UserResponse(BaseModel):
     name: str
     email: str
     bio: str
+    created_at: datetime
     is_admin: bool
 
     class Config:
@@ -140,6 +142,7 @@ class ItemResponse(BaseModel):
     id: int
     name: str
     description: str
+    created_at: datetime
     user_id: int
     
     class Config:

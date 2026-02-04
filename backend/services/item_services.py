@@ -29,6 +29,7 @@ class ItemService:
                 id=item.id,
                 name=item.name,
                 description=item.description,
+                created_at=item.created_at,
                 user_id=item.user.id,
                 user_name=item.user.name,
                 user_email=item.user.email

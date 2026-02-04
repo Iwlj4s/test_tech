@@ -1,6 +1,8 @@
 from typing import List
-from sqlalchemy import String, ForeignKey, Column, Integer, Boolean
+from datetime import datetime
+from sqlalchemy import String, ForeignKey, Column, Integer, Boolean, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.sql import func
 
 from database.database import Base
 
@@ -19,6 +21,10 @@ class User(Base):
     bio: Mapped[str] = mapped_column(String,        # User's biography 
                                      nullable=False,
                                      server_default="User didn't add his bio")
+    
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),   # Creation timestamp
+                                                 nullable=False,
+                                                 server_default=func.now())
     
     is_admin: Mapped[bool] = mapped_column(Boolean, # Is User admin? True/False
                                            nullable=False,
@@ -44,6 +50,9 @@ class Item(Base):
     description: Mapped[str] = mapped_column(String, 
                                              nullable=False, 
                                              server_default="No description") # Item description 
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),   # Creation timestamp
+                                                 nullable=False,
+                                                 server_default=func.now())
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))    # Foreign key to user
 
     # Many-to-one relationship with User model
