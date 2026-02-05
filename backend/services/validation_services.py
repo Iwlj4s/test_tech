@@ -35,13 +35,7 @@ class ValidationService:
             "unique_fields": ["email", "name"],
             "required_fields": ["email", "name", "password"]
         },
-
-        "Item": {
-            "unique_fields": [],
-            "required_fields": ["name", "user_id"],
-            "unique_per_user_fields": ["name"]
-        }
-        ,
+        
         "Post": {
             "unique_fields": [],
             "required_fields": ["user_id", "content"],

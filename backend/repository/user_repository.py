@@ -5,7 +5,6 @@ from typing import Dict, Any, List
 from starlette import status
 from starlette.responses import Response
 
-from DAO.item_dao import ItemDao
 from DAO.post_dao import PostDao
 from database.database import get_db
 from database import models, schema, response_schemas
@@ -65,7 +64,8 @@ async def sign_up(request: schema.User,
                            password=hash_password,
                            bio=request.bio,
                            location=request.location,
-                           is_admin=False)
+                           is_admin=False,
+                           deleted_by_admin=False,)
     db.add(new_user)
 
     await db.commit()
@@ -82,7 +82,11 @@ async def sign_up(request: schema.User,
             bio=new_user.bio,
             location=new_user.location,
             created_at=new_user.created_at,
-            is_admin=new_user.is_admin
+            is_admin=new_user.is_admin,
+            is_active=new_user.is_active,
+            deleted_by_admin=new_user.deleted_by_admin,  
+            deletion_reason=new_user.deletion_reason,    
+            deleted_at=new_user.deleted_at,  
         )
     )
 
@@ -138,8 +142,26 @@ async def get_current_user(db: AsyncSession = Depends(get_db),
     user = await GeneralDAO.get_record_by_id(record_id=user_id,
                                              model=models.User, 
                                              db=db)
+    
+    if not user or not user.is_active:        
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Account is deleted",
+            headers={"WWW-Authenticate": "Bearer"})
 
-    return user
+    return response_schemas.UserResponse(
+        id=user.id,
+        name=user.name,
+        email=user.email,
+        bio=user.bio or "",
+        location=user.location or "",
+        created_at=user.created_at,
+        is_admin=user.is_admin,
+        is_active=user.is_active,
+        deleted_by_admin=user.deleted_by_admin,
+        deletion_reason=user.deletion_reason,
+        deleted_at=user.deleted_at
+    )
 
 
 async def update_me(user_id: int,
@@ -193,63 +215,11 @@ async def update_me(user_id: int,
             bio=updated_user.bio,
             location=updated_user.location,
             created_at=updated_user.created_at,
-            is_admin=updated_user.is_admin
-        )
-    )
-
-async def get_current_user_items(current_user: schema.User, 
-                                 db: AsyncSession = Depends(get_db)) -> response_schemas.UserWithItemsDataResponse:
-    """
-    Get all items belonging to the current authenticated user.
-    
-    :param current_user: Authenticated user
-    :param db: Database session
-
-    :return: User's items
-    :raises HTTPException: 404 if no items found
-    """
-    items = await ItemDao.get_items_by_user_id(db=db, user_id=current_user.id)
-    await CheckHTTP404NotFound(items, "No items found for this user")
-
-    # Use Response Schema to avoid recursion
-    user_data = await UserDAO.get_user_with_items(user_id=current_user.id, db=db)
-
-    return response_schemas.UserWithItemsDataResponse(
-        message="User items retrieved successfully",
-        status_code=200,
-        data=user_data
-    )
-
-async def get_current_user_item(item_id: int,
-                                current_user: schema.User,
-                                db: AsyncSession = Depends(get_db)) -> response_schemas.ItemDetailResponse:
-    """
-    Get specific item belonging to the current user.
-    
-    :param item_id: ID of item to retrieve
-    :param current_user: Authenticated user
-    :param db: Database session
-
-    :return: User's specific item
-    :raises HTTPException: 404 if item not found or doesn't belong to user
-    """
-    
-    item = await ItemDao.get_item_by_user_id(db=db, 
-                                             user_id=current_user.id, 
-                                             item_id=item_id)
-    await CheckHTTP404NotFound(founding_item=item, text="Item not found")
-
-    return response_schemas.ItemDetailResponse(
-        message="Item retrieved successfully",
-        status_code=200,
-        data=response_schemas.ItemWithUserResponse(
-            id=item.id,
-            name=item.name,
-            description=item.description,
-            created_at=item.created_at,
-            user_id=item.user.id,
-            user_name=item.user.name,
-            user_email=item.user.email
+            is_admin=updated_user.is_admin,
+            is_active=updated_user.is_active,
+            deleted_by_admin=updated_user.deleted_by_admin,  
+            deletion_reason=updated_user.deletion_reason,    
+            deleted_at=updated_user.deleted_at,  
         )
     )
 
@@ -318,9 +288,6 @@ async def get_all_users(db: AsyncSession) -> response_schemas.UserListResponse:
     :return: List of all users with their items
     :raises HTTPException: 404 if no users found
     """
-    users = await GeneralDAO.get_all_records(db=db, model=models.User)
-    await exception_helper.CheckHTTP404NotFound(founding_item=users, text="Users not found")
-
     users = await UserDAO.get_all_users(db=db)
     
     return response_schemas.UserListResponse(
@@ -328,3 +295,33 @@ async def get_all_users(db: AsyncSession) -> response_schemas.UserListResponse:
         status_code=200,
         data=users
     )
+
+async def delete_current_user(current_user: models.User,
+                              db: AsyncSession) -> response_schemas.UserDeleteResponse:
+    """
+    User deletes their own account.
+    
+    :param current_user: Authenticated user
+    :param db: Database session
+    :return: Deletion response
+    """
+    # Check if user is already deleted
+    if not current_user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Account is already deleted"
+        )
+    
+    # Soft delete user
+    deleted_user = await UserDAO.soft_delete_acc(db=db,
+                                                 user_id=current_user.id,
+                                                 deleted_by_admin=False,
+                                                 deletion_reason=None)
+    
+    # Delete user's posts (hard delete)
+    deleted_posts_count = await UserDAO.soft_delete_user_posts(db=db,
+                                                               user_id=current_user.id)
+    
+    return response_schemas.UserDeleteResponse(
+        message=f"Your account has been deleted successfully. {deleted_posts_count} posts removed.",
+        status_code=200)

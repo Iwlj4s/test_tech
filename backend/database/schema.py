@@ -8,17 +8,6 @@ Used for request/response data modeling.
 """
 
 # PUBLIC SCHEMAS #
-class Item(BaseModel):
-    """Schema for item creation and validation"""
-    name: Union[str, None] = Field(default=None, min_length=3, title="Item name")
-    description: Optional[str] = Field(default=None, min_length=3, title="Item description")
-    created_at: Union[str] = Field(default=None, title="Item creation timestamp")
-
-class ItemUpdate(BaseModel):
-    """Schema for update item """
-    name: Optional[str] = None
-    description: Optional[str] = None
-
 class User(BaseModel):
     """Schema for user registration and validation"""
     name: Union[str, None] = Field(default=None, min_length=3, title="User name")
@@ -49,6 +38,15 @@ class AdminUserCreate(User):
 class AdminUserUpdate(UserUpdate):
     """Schema for admin updating user (only for admins)"""
     is_admin: Optional[bool] = Field(default=None, title="Is user admin?")
+
+class UserAdminDelete(BaseModel):
+    """Schema for admin user deletion with reason"""
+    reason: Optional[str] = Field(
+        default=None, 
+        min_length=5, 
+        max_length=500, 
+        title="Причина удаления"
+    )
 
 
 # Post schemas

@@ -15,7 +15,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from config import Settings
 
 from database.database import Base
-from database.models import User, Item  
+from database.models import User
 
 settings = Settings()
 

@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database.database import engine, Base, get_db
 
 from routes.user_router import user_router
-from routes.item_router import item_router
 from routes.admin_router import admin_router
 from routes.post_router import post_router
 from config import settings
@@ -59,7 +58,6 @@ async def startup_event():
 
 # Here you include your routes from /routes
 app.include_router(user_router, prefix="/api/v1") # Route for working with "users"
-app.include_router(item_router, prefix="/api/v1") # Route for working with "items"
 app.include_router(admin_router, prefix="/api/v1")  # Route for working with "admin" tasks
 app.include_router(post_router, prefix="/api/v1")  # Route for working with "posts"
 

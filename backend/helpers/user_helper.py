@@ -1,6 +1,8 @@
+from fastapi import HTTPException
 from starlette.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Dict, Any
+from starlette import status
 
 from DAO.user_dao import UserDAO
 from database import response_schemas, schema
@@ -29,6 +31,12 @@ async def take_access_token_for_user(db: AsyncSession,
 
     # Get user by email
     user = await UserDAO.get_user_email(db=db, user_email=str(request.email))
+    if not user or not user.is_active:    
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Account is deleted",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
 
     # Check if user exists
     await CheckHTTP404NotFound(user, "User not found")
@@ -65,5 +73,6 @@ async def take_access_token_for_user(db: AsyncSession,
         created_at=user.created_at,
         location=user.location,
         is_admin=user.is_admin,
+        is_active=user.is_active,
         user_access_token=access_token
     )

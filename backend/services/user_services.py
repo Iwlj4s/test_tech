@@ -1,5 +1,6 @@
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
+from database import models
 from database import response_schemas
 
 class UserService:
@@ -31,9 +32,28 @@ class UserService:
                 bio=user.bio,
                 location=user.location,
                 created_at=user.created_at,
-                is_admin=user.is_admin
+                is_admin=user.is_admin,
+                is_active=user.is_active           
             )
             users_list.append(user_data)
 
         return users_list
+    
+    @staticmethod
+    async def create_user_response(user: models.User) -> response_schemas.UserResponse:
+        """Creating UserResponse from SQLAlchemy User model"""
+        
+        return response_schemas.UserResponse(
+            id=user.id,
+            name=user.name,
+            email=user.email,
+            bio=user.bio or "",
+            location=user.location or "",
+            created_at=user.created_at,
+            is_admin=user.is_admin,
+            is_active=user.is_active,
+            deleted_by_admin=user.deleted_by_admin,
+            deletion_reason=user.deletion_reason,
+            deleted_at=user.deleted_at
+    )
     

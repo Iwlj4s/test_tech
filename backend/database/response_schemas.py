@@ -111,6 +111,10 @@ class UserResponse(BaseModel):
     location: str
     created_at: datetime
     is_admin: bool
+    is_active: bool
+    deleted_by_admin: Optional[bool] = None 
+    deletion_reason: Optional[str] = None
+    deleted_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -127,28 +131,10 @@ class CurrentUserResponse(UserResponse):
     """
     user_access_token: str
 
-class ItemResponse(BaseModel):
-    """
-    Basic item schema without relationships to avoid recursion.
-    Contains essential item information for API responses.
-    
-    Fields:
-    - id: Unique item identifier
-    - name: Item name
-    - description: Item description
-    - user_id: ID of the user who owns this item
-    
-    Use when you need item data without nested user information.
-    """
-    id: int
-    name: str
-    description: str
-    created_at: datetime
-    user_id: int
-    
-    class Config:
-        from_attributes = True
-
+class UserDeleteResponse(BaseResponse):
+    """Response type for user deletion endpoints"""
+    user_id: Optional[int] = None
+    deletion_reason: Optional[str] = None
 
 class PostResponse(BaseModel):
     """
@@ -164,27 +150,6 @@ class PostResponse(BaseModel):
 
 
 # Composite schemas (with relationships)
-class UserWithItemsResponse(UserResponse):
-    """
-    Schema for user with items (flattened structure).
-    Prevents recursion by including items as basic ItemResponse objects.
-    
-    :param id:      int
-                    Unique identifier of the user
-
-    :param name:    str  
-                    Full name of the user
-
-    :param email:   str
-                    Email address of the user
-
-    :param items:   List[ItemResponse]
-                    List of user's items without nested user data to avoid recursion
-    """
-
-    items: List[ItemResponse] = []
-
-
 class PostWithUserResponse(PostResponse):
     """
     Extended post schema including owner information.
@@ -211,22 +176,6 @@ class UserWithPostsResponse(UserResponse):
     """
 
     posts: List[PostResponse] = []
-
-
-class ItemWithUserResponse(ItemResponse):
-    """
-    Extended item schema including owner information.
-    Prevents recursion by flattening user data instead of nested object.
-    
-    Extends ItemResponse with:
-    - user_name: Name of the user who owns this item
-    - user_email: Email of the user who owns this item
-    
-    Use when you need item details with basic owner information.
-    """
-    user_name: str
-    user_email: str
-    
     
 
 # Response type aliases for better readability in route annotations
@@ -243,28 +192,8 @@ UserUpdateResponse = DataResponse[UserResponse]
 UserLoginResponse = DataResponse[CurrentUserResponse]
 """Response type for get current user"""
 
-UserWithItemsDataResponse = DataResponse[UserWithItemsResponse]
-"""Response type for user retrieval with items"""
-
 UserWithPostsDataResponse = DataResponse[UserWithPostsResponse]
 """Response type for user retrieval with posts"""
-
-# Items
-ItemCreateResponse = DataResponse[ItemResponse]
-"""Response type for item creation endpoints"""
-
-ItemUpdateResponse = DataResponse[ItemResponse]
-"""Response type for item update endpoints"""
-
-ItemDeleteResponse = BaseResponse
-"""Response type for item deletion endpoints"""
-
-ItemDetailResponse = DataResponse[ItemWithUserResponse]
-"""Response type for single item retrieval with user info"""
-
-ItemListResponse = ListResponse[ItemWithUserResponse]
-"""Response type for item list retrieval with user info"""
-
 
 # Posts
 PostCreateResponse = DataResponse[PostResponse]

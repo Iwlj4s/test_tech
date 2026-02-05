@@ -74,6 +74,20 @@ async def get_users_for_user(db: AsyncSession = Depends(get_db)) -> response_sch
 
     return await user_repository.get_all_users(db=db)
 
+@user_router.delete("/me/delete", status_code=200)
+async def delete_me(request_context: RequestContext = Depends(get_request_context)) -> response_schemas.UserDeleteResponse:
+    """
+    Delete current user's account (self-delete).
+    Requires valid JWT token.
+    
+    - Soft deletes user account
+    - Hard deletes all user's posts
+    
+    Returns deletion confirmation.
+    """
+    return await user_repository.delete_current_user(current_user=request_context.current_user,
+                                                     db=request_context.db)
+
 @user_router.get("/user/{user_id}", status_code=200)
 async def get_user(user_id: int,
                    db: AsyncSession = Depends(get_db)) -> response_schemas.UserWithPostsDataResponse:
@@ -125,42 +139,6 @@ async def update_me(user_data: schema.UserUpdate,
                                            user_data=user_data,
                                            current_user=request_context.current_user,
                                            db=request_context.db)
-
-@user_router.get("/me/items", status_code=200)
-async def get_current_user_items(request_context: RequestContext = Depends(get_request_context)) -> response_schemas.UserWithItemsDataResponse:
-    """
-    Get all items belonging to the current authenticated user.
-    Requires valid JWT token.
-
-    - **request_context**: Request Context which use basic stuff:
-        - **current_user**: Automatically injected authenticated user
-        - **db**: Database session dependency
-    
-    Returns user's items with ownership information.
-    """
-
-    return await user_repository.get_current_user_items(current_user=request_context.current_user, db=request_context.db)
-
-
-@user_router.get("/me/item/{item_id}", status_code=200)
-async def get_current_user_item(item_id: int,
-                                request_context: RequestContext = Depends(get_request_context)) -> response_schemas.ItemDetailResponse:
-    """
-    Get specific item belonging to the current user.
-    Requires valid JWT token and item ownership.
-    
-    - **item_id**: ID of item to retrieve (path parameter)
-    - **request_context**: Request Context which use basic stuff:
-        - **current_user**: Automatically injected authenticated user
-        - **db**: Database session dependency
-    
-    Returns specific item data with user context.
-    """
-
-    return await user_repository.get_current_user_item(item_id=item_id,
-                                                       current_user=request_context.current_user,
-                                                       db=request_context.db)
-
 
 @user_router.get("/me/posts", status_code=200)
 async def get_current_user_posts(request_context: RequestContext = Depends(get_request_context)) -> response_schemas.UserWithPostsDataResponse:

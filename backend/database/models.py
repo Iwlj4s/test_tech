@@ -33,44 +33,25 @@ class User(Base):
     is_admin: Mapped[bool] = mapped_column(Boolean, # Is User admin? True/False
                                            nullable=False,
                                            server_default="false")
-
-    # One-to-many relationship with Item model
-    item: Mapped[List["Item"]] = relationship(
-        "Item",
-        back_populates="user",   # Back reference
-        lazy="selectin" # Load related items with user
-    )
-
+    
+    is_active: Mapped[bool] = mapped_column(Boolean,    # Active/Deleted flag
+                                            nullable=False,
+                                            server_default="true")
+    deleted_by_admin: Mapped[bool] = mapped_column(Boolean,    # Who deleted account? 
+                                                   nullable=False,
+                                                   server_default="false")
+    deletion_reason: Mapped[str] = mapped_column(String,    # Who deleted account? 
+                                                 nullable=True,
+                                                 server_default=None)
+    deleted_at: Mapped[str] = mapped_column(DateTime(timezone=True),    # When deleted
+                                            nullable=True,
+                                            default=None)
+    
     # One-to-many relationship with Post model
     posts: Mapped[List["Post"]] = relationship(
         "Post",
         back_populates="user",
         lazy="selectin"
-    )
-
-class Item(Base):
-    """
-    Item model.
-    Belongs to specific user through many-to-one relationship.
-    Each user can create an item with the same name as another user
-    But user cannot create an item with the same name as another of THEIR items.
-    """
-    __tablename__ = 'item'
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String, nullable=False)    # Item name (not unique)
-    description: Mapped[str] = mapped_column(String, 
-                                             nullable=False, 
-                                             server_default="No description") # Item description 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),   # Creation timestamp
-                                                 nullable=False,
-                                                 server_default=func.now())
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))    # Foreign key to user
-
-    # Many-to-one relationship with User model
-    user: Mapped["User"] = relationship(
-        "User",
-        back_populates="item",  # Back reference
-        lazy="selectin" # Load user with item
     )
 
 

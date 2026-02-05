@@ -1,4 +1,5 @@
-from fastapi import Depends
+from fastapi import Depends, HTTPException
+from starlette import status
 from dataclasses import dataclass
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -55,4 +56,11 @@ async def get_request_context(db: AsyncSession = Depends(get_db),
     Returns:
         RequestContext: Context with initialized dependencies
     """
+
+    if not current_user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_410_GONE,
+            detail="Account has been deleted"
+    )
+    
     return RequestContext(db=db, current_user=current_user)
