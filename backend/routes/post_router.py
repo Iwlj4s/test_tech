@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Dict, Any, List
 
 
+from DAO.user_dao import UserDAO
 from context.request_context import RequestContext, get_request_context
 from database import response_schemas, schema
 from database.database import get_db
@@ -29,6 +30,11 @@ async def get_post(post_id: int,
     return await post_repository.show_post(post_id=int(post_id),
                                            db=db)
 
+@post_router.get("/{user_id}/posts")
+async def get_user_posts(user_id: int,
+                         db: AsyncSession = Depends(get_db)) -> response_schemas.UserWithPostsDataResponse:
+
+    return await post_repository.get_user_with_posts(user_id=user_id, db=db)
 
 @post_router.post("/create_post")
 async def add_post(request: schema.PostCreate,
@@ -40,8 +46,8 @@ async def add_post(request: schema.PostCreate,
 
 @post_router.patch("/update_post/{post_id}", status_code=200)
 async def update_post(post_id: int,
-                 post_data: schema.PostUpdate,
-                 request_context: RequestContext = Depends(get_request_context)) -> response_schemas.PostUpdateResponse:
+                      post_data: schema.PostUpdate,
+                      request_context: RequestContext = Depends(get_request_context)) -> response_schemas.PostUpdateResponse:
     return await post_repository.update_post(post_id=post_id,
                                              user_id=request_context.current_user.id,
                                              post_data=post_data,

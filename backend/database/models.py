@@ -22,6 +22,10 @@ class User(Base):
                                      nullable=False,
                                      server_default="User didn't add his bio")
     
+    location: Mapped[str] = mapped_column(String,   # User's location. Like Miami/Hamburg
+                                          nullable=True,
+                                          server_default="")
+    
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),   # Creation timestamp
                                                  nullable=False,
                                                  server_default=func.now())

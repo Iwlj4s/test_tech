@@ -108,6 +108,7 @@ class UserResponse(BaseModel):
     name: str
     email: str
     bio: str
+    location: str
     created_at: datetime
     is_admin: bool
 
@@ -149,6 +150,19 @@ class ItemResponse(BaseModel):
         from_attributes = True
 
 
+class PostResponse(BaseModel):
+    """
+    Basic post schema without relationships.
+    """
+    id: int
+    content: str
+    created_at: datetime
+    user_id: int
+
+    class Config:
+        from_attributes = True
+
+
 # Composite schemas (with relationships)
 class UserWithItemsResponse(UserResponse):
     """
@@ -171,6 +185,34 @@ class UserWithItemsResponse(UserResponse):
     items: List[ItemResponse] = []
 
 
+class PostWithUserResponse(PostResponse):
+    """
+    Extended post schema including owner information.
+    """
+    user_name: str
+    user_email: str
+
+class UserWithPostsResponse(UserResponse):
+    """
+    Schema for user with posts (flattened structure).
+    Prevents recursion by including items as basic ItemResponse objects.
+    
+    :param id:      int
+                    Unique identifier of the user
+
+    :param name:    str  
+                    Full name of the user
+
+    :param email:   str
+                    Email address of the user
+
+    :param posts:   List[PostResponse]
+                    List of user's posts without nested user data to avoid recursion
+    """
+
+    posts: List[PostResponse] = []
+
+
 class ItemWithUserResponse(ItemResponse):
     """
     Extended item schema including owner information.
@@ -185,27 +227,6 @@ class ItemWithUserResponse(ItemResponse):
     user_name: str
     user_email: str
     
-
-# Post schemas
-class PostResponse(BaseModel):
-    """
-    Basic post schema without relationships.
-    """
-    id: int
-    content: str
-    created_at: datetime
-    user_id: int
-
-    class Config:
-        from_attributes = True
-
-
-class PostWithUserResponse(PostResponse):
-    """
-    Extended post schema including owner information.
-    """
-    user_name: str
-    user_email: str
     
 
 # Response type aliases for better readability in route annotations
@@ -224,6 +245,9 @@ UserLoginResponse = DataResponse[CurrentUserResponse]
 
 UserWithItemsDataResponse = DataResponse[UserWithItemsResponse]
 """Response type for user retrieval with items"""
+
+UserWithPostsDataResponse = DataResponse[UserWithPostsResponse]
+"""Response type for user retrieval with posts"""
 
 # Items
 ItemCreateResponse = DataResponse[ItemResponse]

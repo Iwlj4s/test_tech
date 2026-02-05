@@ -123,6 +123,16 @@ class PostDao:
         return post.scalars().first()
     
     @classmethod
+    async def get_posts_by_user_id(cls,
+                                   user_id: int,
+                                   db: AsyncSession) -> List[models.Post]:
+        query = select(models.Post).where(models.Post.user_id == user_id)
+        items = await db.execute(query)
+        
+        return items.scalars().all()
+    
+    
+    @classmethod
     async def get_all_posts(cls,
                             db: AsyncSession) -> response_schemas.PostResponse:
         """

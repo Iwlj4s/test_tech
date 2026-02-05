@@ -1,5 +1,2 @@
-export default {
-  plugins: {
-    '@tailwindcss/postcss': {},
-  },
-}
+// PostCSS config cleared because Tailwind/PostCSS removed.
+export default {}

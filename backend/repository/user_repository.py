@@ -6,6 +6,7 @@ from starlette import status
 from starlette.responses import Response
 
 from DAO.item_dao import ItemDao
+from DAO.post_dao import PostDao
 from database.database import get_db
 from database import models, schema, response_schemas
 
@@ -63,6 +64,7 @@ async def sign_up(request: schema.User,
                            email=request.email, 
                            password=hash_password,
                            bio=request.bio,
+                           location=request.location,
                            is_admin=False)
     db.add(new_user)
 
@@ -78,6 +80,7 @@ async def sign_up(request: schema.User,
             name=new_user.name,
             email=new_user.email,
             bio=new_user.bio,
+            location=new_user.location,
             created_at=new_user.created_at,
             is_admin=new_user.is_admin
         )
@@ -188,6 +191,7 @@ async def update_me(user_id: int,
             name=updated_user.name,
             email=updated_user.email,
             bio=updated_user.bio,
+            location=updated_user.location,
             created_at=updated_user.created_at,
             is_admin=updated_user.is_admin
         )
@@ -246,6 +250,62 @@ async def get_current_user_item(item_id: int,
             user_id=item.user.id,
             user_name=item.user.name,
             user_email=item.user.email
+        )
+    )
+
+async def get_current_user_posts(current_user: schema.User, 
+                                 db: AsyncSession = Depends(get_db)) -> response_schemas.UserWithPostsDataResponse:
+    """
+    Get all items belonging to the current authenticated user.
+    
+    :param current_user: Authenticated user
+    :param db: Database session
+
+    :return: User's items
+    :raises HTTPException: 404 if no items found
+    """
+    items = await PostDao.get_posts_by_user_id(db=db, user_id=current_user.id)
+    await CheckHTTP404NotFound(items, "No posts found for this user")
+
+    # Use Response Schema to avoid recursion
+    user_data = await UserDAO.get_user_with_posts(user_id=current_user.id, db=db)
+
+    return response_schemas.UserWithPostsDataResponse(
+        message="User posts retrieved successfully",
+        status_code=200,
+        data=user_data
+    )
+
+async def get_current_user_post(post_id: int,
+                                current_user: schema.User,
+                                db: AsyncSession = Depends(get_db)) -> response_schemas.PostDetailResponse:
+    """
+    Get specific item belonging to the current user.
+    
+    :param item_id: ID of item to retrieve
+    :param current_user: Authenticated user
+    :param db: Database session
+
+    :return: User's specific item
+    :raises HTTPException: 404 if item not found or doesn't belong to user
+    """
+    
+    post = await PostDao.get_post_by_user_id(db=db, 
+                                             user_id=current_user.id, 
+                                             post_id=post_id)
+    
+    await CheckHTTP404NotFound(founding_item=post, text="Post not found")
+
+    return response_schemas.PostDetailResponse(
+        message="Item retrieved successfully",
+        status_code=200,
+        data=response_schemas.PostWithUserResponse(
+            id=post.id,
+            content=post.content,
+            created_at=post.created_at,
+            user_id=post.user.id,
+            user_name=post.user.name,
+            user_email=post.user.email
         )
     )
 

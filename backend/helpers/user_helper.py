@@ -48,7 +48,14 @@ async def take_access_token_for_user(db: AsyncSession,
     # Set token in HTTP-only cookie
     response.set_cookie(key="user_access_token", 
                         value=access_token, 
-                        httponly=True)
+                        httponly=True,
+                        secure=True, 
+                        samesite="none",
+                        max_age=86400,
+                        path="/",
+                        domain=None
+                        ) 
+                        
 
     return response_schemas.CurrentUserResponse(
         id=user.id,
@@ -56,6 +63,7 @@ async def take_access_token_for_user(db: AsyncSession,
         email=user.email,
         bio=user.bio,
         created_at=user.created_at,
+        location=user.location,
         is_admin=user.is_admin,
         user_access_token=access_token
     )

@@ -84,6 +84,7 @@ class UserDAO:
             name=user.name,
             email=user.email,
             bio=user.bio,
+            location=user.location,
             created_at=user.created_at,
             is_admin=user.is_admin,
             items=[
@@ -95,6 +96,41 @@ class UserDAO:
                     user_id=item.user_id
                 )
                 for item in user.item
+            ]
+        )
+
+        return user_data
+    
+    @classmethod
+    async def get_user_with_posts(cls, 
+                                  user_id: int,
+                                  db: AsyncSession) -> response_schemas.UserWithPostsResponse:
+        """
+            Find user with items by user's ID.
+            
+            :param db: Database session
+            :param user_id: User ID to find
+            :return: User data
+        """
+        user = await cls.get_user_by_id(user_id=user_id, db=db)
+        await exception_helper.CheckHTTP404NotFound(founding_item=user, text="User not found")
+
+        user_data = response_schemas.UserWithPostsResponse(
+            id=user.id,
+            name=user.name,
+            email=user.email,
+            bio=user.bio,
+            created_at=user.created_at,
+            location=user.location,
+            is_admin=user.is_admin,
+            posts=[
+                response_schemas.PostResponse(
+                    id=post.id,
+                    content=post.content,
+                    created_at=post.created_at,
+                    user_id=post.user_id
+                )
+                for post in user.posts
             ]
         )
 

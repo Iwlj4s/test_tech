@@ -1,125 +1,26 @@
-@import "tailwindcss";
-
+/* style.css */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+:root {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: #0b0b0b; /* dark neutral background by default */
+  background: #0b0b0b;
   color: #e6eef6;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* App shell centers the main content and provides background layering */
-.app-shell {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  padding: 2rem 1rem;
-}
-
-.app-container {
-  width: 100%;
-  max-width: 980px;
-  background: transparent;
-  border-radius: 20px;
-}
-
-/* Buttons: consistent sizing and shape */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1rem;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-.btn-primary {
-  background: linear-gradient(90deg,#1DA1F2,#2B9DF3);
-  color: white;
-  border: none;
-}
-.btn-outline {
-  background: rgba(255,255,255,0.02);
-  color: inherit;
-  border: 1px solid rgba(255,255,255,0.06);
-}
-
-/* Logout button positioning in header */
-.logout-btn {
-  position: fixed;
-  margin-top: 25px;
-}
-
-/* Profile specific */
-.profile-cover {
-  height: 220px;
-  border-radius: 14px;
-  box-shadow: 0 6px 18px rgba(2,6,23,0.6) inset;
-}
-.profile-avatar {
-  width: 128px;
-  height: 128px;
-  border-radius: 16px;
-  border: 6px solid rgba(11,11,11,1);
-  object-fit: cover;
-  box-shadow: 0 8px 20px rgba(2,6,23,0.6);
-}
-
-/* Tighter content area to avoid overlap */
-.profile-section {
-  padding: 1rem 0 3rem 0;
-}
-
-.posts-list {
-  margin-top: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-.card {
-  padding: 2em;
 }
 
 #app {
@@ -127,15 +28,33 @@ button:focus-visible {
   min-height: 100vh;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+/* Утилиты */
+.hidden {
+  display: none !important;
+}
+
+/* Анимации */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
 }

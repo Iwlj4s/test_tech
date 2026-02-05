@@ -76,20 +76,20 @@ async def get_users_for_user(db: AsyncSession = Depends(get_db)) -> response_sch
 
 @user_router.get("/user/{user_id}", status_code=200)
 async def get_user(user_id: int,
-                   db: AsyncSession = Depends(get_db)) -> response_schemas.UserWithItemsDataResponse:
+                   db: AsyncSession = Depends(get_db)) -> response_schemas.UserWithPostsDataResponse:
     """
     Get user profile by ID.
     Public endpoint - no authentication required.
     
     - **user_id**: ID of user to retrieve (path parameter)
     
-    Returns user data with their items.
+    Returns user data with their posts.
     """
 
     # Use Response Schema to avoid recursion
-    user_data = await UserDAO.get_user_with_items(user_id=user_id, db=db)
+    user_data = await UserDAO.get_user_with_posts(user_id=user_id, db=db)
     
-    return response_schemas.UserWithItemsDataResponse(
+    return response_schemas.UserWithPostsDataResponse(
         message="User retrieved successfully",
         status_code=200,
         data=user_data
@@ -158,5 +158,41 @@ async def get_current_user_item(item_id: int,
     """
 
     return await user_repository.get_current_user_item(item_id=item_id,
+                                                       current_user=request_context.current_user,
+                                                       db=request_context.db)
+
+
+@user_router.get("/me/posts", status_code=200)
+async def get_current_user_posts(request_context: RequestContext = Depends(get_request_context)) -> response_schemas.UserWithPostsDataResponse:
+    """
+    Get all posts belonging to the current authenticated user.
+    Requires valid JWT token.
+
+    - **request_context**: Request Context which use basic stuff:
+        - **current_user**: Automatically injected authenticated user
+        - **db**: Database session dependency
+    
+    Returns user's posts with ownership information.
+    """
+
+    return await user_repository.get_current_user_posts(current_user=request_context.current_user, db=request_context.db)
+
+
+@user_router.get("/me/post/{post_id}", status_code=200)
+async def get_current_user_post(post_id: int,
+                                request_context: RequestContext = Depends(get_request_context)) -> response_schemas.PostDetailResponse:
+    """
+    Get specific post belonging to the current user.
+    Requires valid JWT token and item ownership.
+    
+    - **item_id**: ID of item to retrieve (path parameter)
+    - **request_context**: Request Context which use basic stuff:
+        - **current_user**: Automatically injected authenticated user
+        - **db**: Database session dependency
+    
+    Returns specific post data with user context.
+    """
+
+    return await user_repository.get_current_user_post(post_id=post_id,
                                                        current_user=request_context.current_user,
                                                        db=request_context.db)

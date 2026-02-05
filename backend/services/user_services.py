@@ -29,6 +29,7 @@ class UserService:
                 name=user.name,
                 email=user.email,
                 bio=user.bio,
+                location=user.location,
                 created_at=user.created_at,
                 is_admin=user.is_admin
             )

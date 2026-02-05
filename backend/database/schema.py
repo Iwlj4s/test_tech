@@ -25,6 +25,7 @@ class User(BaseModel):
     email: Union[str, None] = Field(default=None, title="User's email")
     password: Union[str, None] = Field(default=None, min_length=4, title="User's password")
     bio: Optional[str] = Field(default=None, min_length=10, title="User's biography")
+    location: Optional[str] = Field(default=None, title="User location")
     created_at: Union[str] = Field(default=None, title="User creation timestamp")
 
 class UserSignIn(BaseModel):
@@ -37,6 +38,7 @@ class UserUpdate(BaseModel):
     name: Union[str, None] = Field(default=None, min_length=3, title="User name")
     email: Union[str, None] = Field(default=None, title="User's email")
     bio: Optional[str] = Field(default=None, min_length=10, title="User's biography")
+    location: Optional[str] = Field(default=None, title="User's location")
 
 
 # ADMIN SCHEMAS #

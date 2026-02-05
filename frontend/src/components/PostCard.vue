@@ -1,67 +1,141 @@
 <template>
-  <div class="border-b border-gray-200 dark:border-gray-900 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition cursor-pointer rounded-xl">
+  <div class="post-card">
     <!-- Post Header -->
-    <div class="flex gap-3">
-      <!-- Avatar -->
-      <img
-        :src="post.authorAvatar"
-        :alt="post.author"
-        class="w-12 h-12 rounded-full"
-      />
-
-      <!-- Post Content -->
-      <div class="flex-1">
-        <!-- Author Info -->
-        <div class="flex items-center gap-2 mb-1">
-          <span class="font-bold text-gray-900 dark:text-white hover:underline">
-            {{ post.author }}
-          </span>
-          <span class="text-gray-500 dark:text-gray-400">@{{ post.handle }}</span>
-          <span class="text-gray-500 dark:text-gray-400">·</span>
-          <span class="text-gray-500 dark:text-gray-400 text-sm">{{ post.time }}</span>
+    <div class="post-header">
+      <div class="author-info" @click="goToUserProfile">
+        <div class="author-avatar">
+          {{ getInitials(post.user_name || 'Пользователь') }}
         </div>
-
-        <!-- Post Text -->
-        <p class="text-gray-900 dark:text-white mb-3 text-base">
-          {{ post.content }}
-        </p>
-
-        <!-- Post Stats -->
-        <div class="flex justify-between text-gray-500 dark:text-gray-400 max-w-xs text-sm py-2">
-          <div class="flex items-center gap-2 hover:text-blue-500 transition">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-            <span>{{ post.replies }}</span>
-          </div>
-          <div class="flex items-center gap-2 hover:text-green-500 transition">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            <span>{{ post.retweets }}</span>
-          </div>
-          <div class="flex items-center gap-2 hover:text-red-500 transition">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-            <span>{{ post.likes }}</span>
-          </div>
-          <div class="flex items-center gap-2 hover:text-blue-500 transition">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-          </div>
+        <div class="author-details">
+          <div class="author-name">{{ post.user_name || 'Пользователь' }}</div>
+          <div class="post-time">{{ formatDate(post.created_at) }}</div>
         </div>
       </div>
+    </div>
+
+    <!-- Post Content -->
+    <div class="post-content">
+      <p>{{ post.content }}</p>
     </div>
   </div>
 </template>
 
 <script setup>
-defineProps({
+import { defineProps } from 'vue'
+
+const props = defineProps({
   post: {
     type: Object,
     required: true
   }
 })
+
+const emit = defineEmits(['user-click'])
+
+// Получение инициалов для аватара
+const getInitials = (name) => {
+  return name
+    .split(' ')
+    .map(word => word[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+}
+
+// Форматирование даты
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffMs = now - date
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+  
+  if (diffMins < 1) return 'Только что'
+  if (diffMins < 60) return `${diffMins} мин назад`
+  if (diffHours < 24) return `${diffHours} ч назад`
+  if (diffDays < 7) return `${diffDays} д назад`
+  
+  return date.toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'short'
+  })
+}
+
+// Переход в профиль пользователя
+const goToUserProfile = () => {
+  if (props.post.user_id) {
+    emit('user-click', props.post.user_id)
+  }
+}
 </script>
+
+<style scoped>
+.post-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.post-card:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.author-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.author-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: white;
+}
+
+.author-details {
+  flex: 1;
+}
+
+.author-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #e6eef6;
+  margin-bottom: 0.25rem;
+}
+
+.post-time {
+  font-size: 0.875rem;
+  color: #94a3b8;
+}
+
+.post-content {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #e6eef6;
+}
+
+.post-content p {
+  margin: 0;
+}
+</style>

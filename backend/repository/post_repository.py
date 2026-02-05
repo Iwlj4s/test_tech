@@ -5,6 +5,7 @@ from typing import Dict, Any, List
 
 from starlette.responses import Response
 
+from DAO.user_dao import UserDAO
 from database import schema, models, response_schemas
 
 from helpers import exception_helper
@@ -114,4 +115,16 @@ async def get_all_posts(db: AsyncSession) -> response_schemas.PostListResponse:
         message="Posts retrieved successfully",
         status_code=200,
         data=posts_list
+    )
+
+async def get_user_with_posts(user_id: int,
+                              db: AsyncSession) -> response_schemas.UserWithPostsDataResponse:
+
+    users_data = await UserDAO.get_user_with_posts(user_id=user_id,
+                                                    db=db)
+    
+    return response_schemas.UserWithPostsDataResponse(
+        message="User's poists retrieved successfully",
+        status_code=200,
+        data=users_data
     )
