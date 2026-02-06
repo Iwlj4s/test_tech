@@ -144,6 +144,8 @@
                   {{ user.location }}
                 </span>
                 <span class="meta-item deleted-badge">
+                  <h3 class="meta-item deleted-badge">Причина блокировки:</h3> 
+                  <p class="user-email">{{ user.deletion_reason  || 'Удалил аккаунт самостоятельно'}}</p>
                   Удален
                 </span>
               </div>
@@ -517,6 +519,7 @@ onMounted(async () => {
 .deleted-badge {
   color: #ef4444;
   font-weight: 600;
+  font-size: 15px;
 }
 
 /* Действия с пользователем */
