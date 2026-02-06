@@ -11,7 +11,7 @@
 
 ### !!! Важное примечание !!!
 
-Данный проект разработан на основе моего собственного FastAPI-пресета, который я создала ранее для ускорения разработки backend-приложений. Это объясняет:
+Данный проект разработан на основе [моего собственного FastAPI-пресета](https://github.com/Iwlj4s/FastAPIPreset), который я создала ранее для ускорения разработки backend-приложений. Это объясняет:
 
  - Структуру проекта - многослойная архитектура 
 
@@ -28,7 +28,7 @@
 ### Аутентификация и авторизация
 - Система JWT-аутентификации (без использования встроенных решений фреймворков)
 - Регистрация с валидацией данных
-- Логин/логаут с использованием HTTP-only cookies
+- Логин/логаут с использованием cookies
 - Идентификация пользователя при последующих обращениях
 
 ### Управление пользователями
@@ -90,7 +90,7 @@ test_tech/
 1. **Клонирование или загрузка проекта**:
 ```bash
 # Если используете git
-git clone <your-repository-url>
+git clone https://github.com/Iwlj4s/test_tech.git
 cd test_tech
 
 # Или просто скачайте и распакуйте файлы проекта
@@ -129,7 +129,8 @@ pip install -r requirements.txt
 
     | email | password |
     |----------|-------------|
-    | admin@gmail.com | adminpass | 
+    | admin@gmail.com | adminpass |
+    | admin2@gmail.com | admin2pass | 
     | bob@gmail.com | bobpass | 
     | mashka@gmail.com | mashkapass | 
     | sam@gmail.com | sampass | 
@@ -167,7 +168,7 @@ DATABASE_URL_POSTGRE="postgresql+asyncpg://your_username:your_password@localhost
 DATABASE_URL_ALEMBIC_POSTGRE="postgresql://your_username:your_password@localhost:5432/test_tech"
 
 # JWT Аутентификация
-SECRET_KEY=ваш_очень_безопасный_секретный_ключ
+SECRET_KEY=your_secret_key
 ALGORITHM=HS256
 ```
 2. Сгенерируйте `SECRET_KEY`:
@@ -219,6 +220,11 @@ cd frontend
 
 npm install
 ```
+
+![alt text](<git img/image2.png>)
+
+Вот это я просто заигнорила, вроде все работает
+
 2. Запустите фронтенд
 ``` bash
 npm run dev
