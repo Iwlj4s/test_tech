@@ -33,7 +33,16 @@ const routes = [
     name: 'user',
     component: UserProfileView,
     meta: { requiresAuth: true }
+  },
+  {
+  path: '/admin',
+  name: 'admin',
+  component: () => import('../components/AdminPanel.vue'),
+  meta: { 
+    requiresAuth: true,
+    requiresAdmin: true 
   }
+}
 ]
 
 const router = createRouter({
@@ -45,15 +54,18 @@ router.beforeEach(async (to, from, next) => {
   const { useUserStore } = await import('../stores/userStore.js')
   const userStore = useUserStore()
   
-  if (to.meta.requiresAuth && !userStore.isAuthenticated) {
+  if (!userStore.user && userStore.isAuthenticated) {
     await userStore.loadUser()
-    
-    if (!userStore.isAuthenticated) {
-      next('/auth')
-    } else {
-      next()
-    }
-  } else {
+  }
+  
+  if (to.meta.requiresAuth && !userStore.isAuthenticated) {
+    next('/auth')
+  } 
+  else if (to.meta.requiresAdmin && !userStore.user?.is_admin) {
+    alert('У вас нет прав администратора')
+    next('/profile')
+  }
+  else {
     next()
   }
 })

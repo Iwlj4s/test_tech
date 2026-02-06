@@ -57,6 +57,28 @@
             :disabled="isSaving"
           />
         </div>
+
+        <div class="danger-zone">
+          <h3 class="danger-title">Опасная зона</h3>
+          <p class="danger-description">
+            Эти действия необратимы. Пожалуйста, будьте осторожны.
+          </p>
+          
+          <div class="danger-actions">
+            <button 
+              @click="deleteAccount" 
+              class="btn btn-danger"
+              :disabled="isDeleting"
+            >
+              <svg class="danger-icon" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+              </svg>
+              <span v-if="isDeleting">Удаление...</span>
+              <span v-else>Удалить аккаунт</span>
+            </button>
+          </div>
+        </div>
+
       </div>
 
       <!-- Modal Footer -->
@@ -76,10 +98,14 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useUserStore } from '../stores/userStore'
+import { useRouter } from 'vue-router'
 
 const emit = defineEmits(['close', 'save'])
 const userStore = useUserStore()
+const router = useRouter()
+
 const isSaving = ref(false)
+const isDeleting = ref(false)
 
 const formData = ref({
   name: userStore.user?.name || '',
@@ -100,7 +126,7 @@ const hasChanges = computed(() => {
 })
 
 const closeModal = () => {
-  if (!isSaving.value) {
+  if (!isSaving.value && !isDeleting.value) {
     emit('close')
   }
 }
@@ -135,6 +161,40 @@ const saveProfile = async () => {
     console.error('Save error:', error)
   } finally {
     isSaving.value = false
+  }
+}
+
+// Удаление аккаунта
+const deleteAccount = async () => {
+  if (!confirm('ВЫ УВЕРЕНЫ, ЧТО ХОТИТЕ УДАЛИТЬ СВОЙ АККАУНТ?\n\nЭто действие НЕОБРАТИМО и приведет к:\n• Удалению всех ваших постов\n• Полному удалению профиля\n• Невозможности восстановления данных')) {
+    return
+  }
+
+  isDeleting.value = true
+
+  try {
+    // Выполняем DELETE запрос к API
+    await userStore.deleteAccount();
+      
+    console.log('Аккаунт удален')
+    
+    // Показываем сообщение об успехе
+    alert('Ваш аккаунт успешно удален. Все данные очищены.')
+    
+    // Выходим из системы
+    await userStore.logout()
+    
+    // Закрываем модальное окно
+    closeModal()
+    
+    // Перенаправляем на страницу авторизации
+    router.push('/auth')
+    
+  } catch (error) {
+    console.error('Delete account error:', error)
+    alert('Ошибка удаления аккаунта: ' + error.message)
+  } finally {
+    isDeleting.value = false
   }
 }
 </script>
@@ -243,6 +303,68 @@ const saveProfile = async () => {
   resize: vertical;
   min-height: 100px;
 }
+
+.danger-zone {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 12px;
+}
+
+.danger-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ef4444;
+  margin-bottom: 0.5rem;
+}
+
+.danger-description {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.danger-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.btn-danger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-danger:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.danger-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
 
 .modal-footer {
   display: flex;

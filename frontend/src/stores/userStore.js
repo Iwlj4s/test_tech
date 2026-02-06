@@ -340,22 +340,46 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  // Получение всех пользователей
-  const getAllUsers = async () => {
+  // Удаление аккаунта
+  const deleteAccount = async () => {
     isLoading.value = true
     error.value = null
     
     try {
-      const response = await fetch(`${API_BASE_URL}/users/`, {
-        method: 'GET',
-        credentials: 'include'
+      console.log('Удаление аккаунта, отправляю запрос...')
+      
+      const response = await fetch(`${API_BASE_URL}/users/me/delete`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+        }
       })
-
-      await handleApiError(response, 'Ошибка загрузки пользователей')
-
+      
+      console.log('Удаление аккаунта, статус ответа:', response.status)
+      
+      if (!response.ok) {
+        let errorMessage = 'Ошибка удаления аккаунта'
+        try {
+          const errorData = await response.json()
+          errorMessage = errorData.detail || errorData.message || errorMessage
+        } catch {
+          errorMessage = `${response.status}: ${response.statusText}`
+        }
+        throw new Error(errorMessage)
+      }
+      
       const data = await response.json()
-      return data.data || [] // Теперь точно возвращаем массив
+      console.log('Аккаунт удален:', data)
+      
+      // Сбрасываем состояние
+      user.value = null
+      isAuthenticated.value = false
+      error.value = null
+      
+      return data
     } catch (err) {
+      console.error('Ошибка удаления аккаунта:', err)
       error.value = err.message
       throw err
     } finally {
@@ -363,27 +387,50 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  // Получение пользователя по ID
-  const getUserById = async (userId) => {
-    isLoading.value = true
-    error.value = null
-    
-    try {
-      const response = await fetch(`${API_BASE_URL}/users/user/${userId}`, {
-        method: 'GET',
-        credentials: 'include'
-      })
+    // Получение всех пользователей
+    const getAllUsers = async () => {
+      isLoading.value = true
+      error.value = null
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/users/`, {
+          method: 'GET',
+          credentials: 'include'
+        })
 
-      await handleApiError(response, 'Ошибка загрузки пользователя')
+        await handleApiError(response, 'Ошибка загрузки пользователей')
 
-      const data = await response.json()
-      return data.data || null
-    } catch (err) {
-      error.value = err.message
-      throw err
-    } finally {
-      isLoading.value = false
+        const data = await response.json()
+        return data.data || [] // Теперь точно возвращаем массив
+      } catch (err) {
+        error.value = err.message
+        throw err
+      } finally {
+        isLoading.value = false
+      }
     }
+
+    // Получение пользователя по ID
+    const getUserById = async (userId) => {
+      isLoading.value = true
+      error.value = null
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/users/user/${userId}`, {
+          method: 'GET',
+          credentials: 'include'
+        })
+
+        await handleApiError(response, 'Ошибка загрузки пользователя')
+
+        const data = await response.json()
+        return data.data || null
+      } catch (err) {
+        error.value = err.message
+        throw err
+      } finally {
+        isLoading.value = false
+      }
   }
 
   // Получение постов текущего пользователя
@@ -492,89 +539,6 @@ export const useUserStore = defineStore('user', () => {
   }
 
 
-  // Повышение пользователя до админа
-  const promoteToAdmin = async (userId) => {
-    if (!isAuthenticated.value || !user.value?.is_admin) {
-      throw new Error('Требуются права администратора')
-    }
-    
-    isLoading.value = true
-    error.value = null
-    
-    try {
-      const response = await fetch(`${API_BASE_URL}/admin/users/promote_to_admin/${userId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        credentials: 'include'
-      })
-
-      await handleApiError(response, 'Ошибка назначения админом')
-
-      const data = await response.json()
-      
-      // Если текущий пользователь обновил свой профиль
-      if (user.value?.id === userId && data.data) {
-        user.value = { ...user.value, ...data.data }
-      }
-      
-      return data
-    } catch (err) {
-      error.value = err.message
-      throw err
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  // Понижение пользователя из админа
-  const demoteFromAdmin = async (userId) => {
-    if (!isAuthenticated.value || !user.value?.is_admin) {
-      throw new Error('Требуются права администратора')
-    }
-    
-    isLoading.value = true
-    error.value = null
-    
-    try {
-      const response = await fetch(`${API_BASE_URL}/admin/users/demote_from_admin/${userId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        credentials: 'include'
-      })
-
-      await handleApiError(response, 'Ошибка снятия прав админа')
-
-      const data = await response.json()
-      
-      // Если текущий пользователь обновил свой профиль
-      if (user.value?.id === userId && data.data) {
-        user.value = { ...user.value, ...data.data }
-      }
-      
-      return data
-    } catch (err) {
-      error.value = err.message
-      throw err
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  // Обновление данных пользователя после изменения статуса
-  const updateUserAdminStatus = async (userId, isAdmin) => {
-    if (isAdmin) {
-      return await promoteToAdmin(userId)
-    } else {
-      return await demoteFromAdmin(userId)
-    }
-  }
-
   // Сброс ошибки
   const clearError = () => {
     error.value = null
@@ -614,9 +578,7 @@ export const useUserStore = defineStore('user', () => {
     getUserPosts,
     getUserPost,
     getCurrentUserWithPosts,
-    promoteToAdmin,
-    demoteFromAdmin,
-    updateUserAdminStatus,
+    deleteAccount,
     clearError,
     reset
   }

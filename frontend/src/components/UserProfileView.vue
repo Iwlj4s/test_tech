@@ -75,6 +75,18 @@
                 <span v-if="userStore.isLoading">Снятие...</span>
                 <span v-else>Снять с должности</span>
               </button>
+
+              <button 
+                @click="deleteUser"
+                class="admin-action-btn delete-btn"
+                :disabled="userStore.isLoading"
+              >
+                <svg class="admin-action-icon" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+                <span v-if="userStore.isLoading">Удаление...</span>
+                <span v-else>Удалить</span>
+              </button>
             </div>
           </div>
 
@@ -153,10 +165,12 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '../stores/userStore'
+import { useAdminStore } from '../stores/adminStore'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const adminStore = useAdminStore()
 
 const user = ref(null)
 const posts = ref([])
@@ -263,7 +277,7 @@ const promoteToAdmin = async () => {
   }
   
   try {
-    const result = await userStore.promoteToAdmin(userId.value)
+    const result = await adminStore.promoteToAdmin(userId.value)
     if (result.status_code === 200) {
       alert('Пользователь назначен администратором!')
       // Обновляем данные пользователя
@@ -281,12 +295,24 @@ const demoteFromAdmin = async () => {
   }
   
   try {
-    const result = await userStore.demoteFromAdmin(userId.value)
+    const result = await adminStore.demoteFromAdmin(userId.value)
     if (result.status_code === 200) {
       alert('Пользователь снят с должности администратора!')
       // Обновляем данные пользователя
       user.value = { ...user.value, ...result.data }
     }
+  } catch (error) {
+    alert('Ошибка: ' + error.message)
+  }
+}
+
+const deleteUser = async () => {  
+  if (!confirm(`Удалить пользователя "${user.value.name}"?`)) return
+  
+  try {
+    const result = await adminStore.deleteUser(userId.value)
+    alert(result.message)
+    router.push('/admin') // Перенаправляем в админку
   } catch (error) {
     alert('Ошибка: ' + error.message)
   }

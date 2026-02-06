@@ -25,6 +25,13 @@
             <button @click="goToFeed" class="nav-btn">
               Лента постов
             </button>
+            <button 
+              v-if="userStore.user?.is_admin"
+              @click="goToAdmin"
+              class="nav-btn admin-btn"
+            >
+              Админка
+            </button>
             <button @click="handleLogout" class="logout-btn" :disabled="userStore.isLoading">
               <span v-if="userStore.isLoading">Выход...</span>
               <span v-else>Выход</span>
@@ -327,6 +334,10 @@ const formattedDate = computed(() => {
     day: 'numeric'
   })
 })
+
+const goToAdmin = () => {
+  router.push('/admin')
+}
 
 // Загрузка постов ТОЛЬКО текущего пользователя
 const loadPosts = async () => {
