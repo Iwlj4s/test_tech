@@ -39,6 +39,13 @@ async def update_admin_status(user_id: int,
                                                         db=db)
     await CheckHTTP404NotFound(founding_item=user_to_promote, text="User not found")
 
+    # This all checks can be in excpetion_helper.py or in something like that
+    if not user_to_promote.is_active:
+        raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"User {user_to_promote.name} is not active"
+            )
+
     if is_admin:
         if user_to_promote.is_admin:
             raise HTTPException(
@@ -67,19 +74,12 @@ async def update_admin_status(user_id: int,
 
     user_to_promote = await AdminDAO.update_user_admin_status(db=db, user=user_to_promote, is_admin=is_admin)
 
+    user_data = await UserService.create_user_response(user=user_to_promote)
+
     return response_schemas.UserUpdateResponse(
         message=f"User {user_to_promote.name} has been {'promoted to admin' if is_admin else 'demoted from admin'}",
         status_code=200,
-        data=response_schemas.UserResponse(
-            id=user_to_promote.id,
-            name=user_to_promote.name,
-            email=user_to_promote.email,
-            bio=user_to_promote.bio,
-            location=user_to_promote.location,
-            created_at=user_to_promote.created_at,
-            is_admin=user_to_promote.is_admin,
-            is_active=user_to_promote.is_active
-        )
+        data=user_data
     )
 
 async def delete_user_admin(admin_user: models.User,

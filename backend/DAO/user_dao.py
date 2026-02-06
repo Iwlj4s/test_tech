@@ -80,31 +80,10 @@ class UserDAO:
         """
         user = await cls.get_user_by_id(user_id=user_id, db=db)
         await exception_helper.CheckHTTP404NotFound(founding_item=user, text="User not found")
+        
+        user_with_posts = await UserService.create_user_with_posts_response(user=user)
 
-        user_data = response_schemas.UserWithPostsResponse(
-            id=user.id,
-            name=user.name,
-            email=user.email,
-            bio=user.bio,
-            created_at=user.created_at,
-            location=user.location,
-            is_admin=user.is_admin,
-            is_active=user.is_active,
-            deleted_by_admin=user.deleted_by_admin,  
-            deletion_reason=user.deletion_reason,    
-            deleted_at=user.deleted_at,              
-            posts=[
-                response_schemas.PostResponse(
-                    id=post.id,
-                    content=post.content,
-                    created_at=post.created_at,
-                    user_id=post.user_id
-                )
-                for post in user.posts
-            ]
-        )
-
-        return user_data
+        return user_with_posts
     
     @classmethod
     async def get_all_users(cls,
@@ -193,9 +172,10 @@ class UserDAO:
         :param db: Database session
         :return: List of deleted users
         """
-        query = select(models.User).where(
-            models.User.is_active == False
-        ).order_by(models.User.deleted_at.desc())
+        query = select(models.User).where(or_(
+            models.User.is_active == False,
+            models.User.is_active == "false"
+        )).order_by(models.User.deleted_at.desc())
         
         result = await db.execute(query)
         return result.scalars().all()

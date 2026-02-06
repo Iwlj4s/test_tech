@@ -6,6 +6,8 @@ from starlette import status
 from starlette.responses import Response
 
 from DAO.post_dao import PostDao
+from services.post_services import PostService
+from services.user_services import UserService
 from database.database import get_db
 from database import models, schema, response_schemas
 
@@ -65,29 +67,19 @@ async def sign_up(request: schema.User,
                            bio=request.bio,
                            location=request.location,
                            is_admin=False,
-                           deleted_by_admin=False,)
+                           deleted_by_admin=False)
     db.add(new_user)
 
     await db.commit()
     await db.refresh(new_user)
     print(f"   User created with ID: {new_user.id}")
 
+    user_data = await UserService.create_user_response(user=new_user)
+
     return response_schemas.UserCreateResponse(
         message="User has been created successfully",
         status_code=200,
-        data=response_schemas.UserResponse(
-            id=new_user.id,
-            name=new_user.name,
-            email=new_user.email,
-            bio=new_user.bio,
-            location=new_user.location,
-            created_at=new_user.created_at,
-            is_admin=new_user.is_admin,
-            is_active=new_user.is_active,
-            deleted_by_admin=new_user.deleted_by_admin,  
-            deletion_reason=new_user.deletion_reason,    
-            deleted_at=new_user.deleted_at,  
-        )
+        data=user_data
     )
 
 
@@ -148,20 +140,10 @@ async def get_current_user(db: AsyncSession = Depends(get_db),
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Account is deleted",
             headers={"WWW-Authenticate": "Bearer"})
+    
+    user_data = await UserService.create_user_response(user=user)
 
-    return response_schemas.UserResponse(
-        id=user.id,
-        name=user.name,
-        email=user.email,
-        bio=user.bio or "",
-        location=user.location or "",
-        created_at=user.created_at,
-        is_admin=user.is_admin,
-        is_active=user.is_active,
-        deleted_by_admin=user.deleted_by_admin,
-        deletion_reason=user.deletion_reason,
-        deleted_at=user.deleted_at
-    )
+    return user_data
 
 
 async def update_me(user_id: int,
@@ -204,23 +186,13 @@ async def update_me(user_id: int,
                                                   record=updating_user,
                                                   update_data=user_data,
                                                   db=db)
+    
+    user_data = await UserService.create_user_response(user=updated_user)
 
     return response_schemas.UserUpdateResponse(
         message="User has been updated",
         status_code=200,
-        data = response_schemas.UserResponse(
-            id=updated_user.id,
-            name=updated_user.name,
-            email=updated_user.email,
-            bio=updated_user.bio,
-            location=updated_user.location,
-            created_at=updated_user.created_at,
-            is_admin=updated_user.is_admin,
-            is_active=updated_user.is_active,
-            deleted_by_admin=updated_user.deleted_by_admin,  
-            deletion_reason=updated_user.deletion_reason,    
-            deleted_at=updated_user.deleted_at,  
-        )
+        data = user_data
     )
 
 async def get_current_user_posts(current_user: schema.User, 
@@ -239,6 +211,7 @@ async def get_current_user_posts(current_user: schema.User,
 
     # Use Response Schema to avoid recursion
     user_data = await UserDAO.get_user_with_posts(user_id=current_user.id, db=db)
+    #user_with_posts = await UserService.create_user_with_posts_response(user=current_user)
 
     return response_schemas.UserWithPostsDataResponse(
         message="User posts retrieved successfully",
@@ -265,18 +238,13 @@ async def get_current_user_post(post_id: int,
                                              post_id=post_id)
     
     await CheckHTTP404NotFound(founding_item=post, text="Post not found")
+    
+    post_data = await PostService.create_post_detail_response(post=post)
 
     return response_schemas.PostDetailResponse(
-        message="Item retrieved successfully",
+        message="Post retrieved successfully",
         status_code=200,
-        data=response_schemas.PostWithUserResponse(
-            id=post.id,
-            content=post.content,
-            created_at=post.created_at,
-            user_id=post.user.id,
-            user_name=post.user.name,
-            user_email=post.user.email
-        )
+        data=post_data 
     )
 
 

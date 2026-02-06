@@ -33,7 +33,10 @@ class UserService:
                 location=user.location,
                 created_at=user.created_at,
                 is_admin=user.is_admin,
-                is_active=user.is_active           
+                is_active=user.is_active,
+                deleted_by_admin=user.deleted_by_admin,
+                deletion_reason=user.deletion_reason,  
+                deleted_at=user.deleted_at,                       
             )
             users_list.append(user_data)
 
@@ -42,7 +45,7 @@ class UserService:
     @staticmethod
     async def create_user_response(user: models.User) -> response_schemas.UserResponse:
         """Creating UserResponse from SQLAlchemy User model"""
-        
+
         return response_schemas.UserResponse(
             id=user.id,
             name=user.name,
@@ -57,3 +60,20 @@ class UserService:
             deleted_at=user.deleted_at
     )
     
+    @staticmethod
+    async def create_user_with_posts_response(user: models.User) -> response_schemas.UserWithPostsResponse:
+        user_data = await UserService.create_user_response(user=user)
+        posts = [
+             response_schemas.PostResponse(
+                id=post.id,
+                content=post.content,
+                created_at=post.created_at,
+                user_id=post.user_id
+            )
+            for post in user.posts
+        ]
+
+        return response_schemas.UserWithPostsResponse(
+            **user_data.dict(),  # Transform to dict cause UserWithPostsResponse wait named args for fields
+            posts=posts
+        )

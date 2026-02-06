@@ -63,8 +63,7 @@ async def take_access_token_for_user(db: AsyncSession,
                         path="/",
                         domain=None
                         ) 
-                        
-
+                            
     return response_schemas.CurrentUserResponse(
         id=user.id,
         name=user.name,
